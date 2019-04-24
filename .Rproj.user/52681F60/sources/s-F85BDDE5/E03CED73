@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1555524534584.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "E03CED73",
+    "lastKnownWriteTime" : 1555524946,
+    "last_content_update" : 1555524946031,
+    "path" : "F:/Dropbox/Programming/R/ShinyCountries/utils/namedListToFrame.R",
+    "project_path" : "utils/namedListToFrame.R",
+    "properties" : {
+        "cursorPosition" : "7,1",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
