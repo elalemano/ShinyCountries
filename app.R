@@ -96,7 +96,7 @@ ui <- dashboardPagePlus(
       badgeStatus = "success",
       icon = icon('question'),
       notificationItem('Contact the creator', icon = shiny::icon("envelope"), status = "success", href = 'mailto:l_busswinkel@hotmail.de'),
-      notificationItem('Check me out on Github', icon = shiny::icon("github"), status = "success", href = NULL),
+      notificationItem('Check me out on Github', icon = shiny::icon("github"), status = "success", href = 'https://github.com/elalemano/ShinyCountries'),
       notificationItem('Follow me on Twitter', icon = shiny::icon("twitter"), status = "success", href = 'https://twitter.com/LycopersiconLBB')
     )
   ),
