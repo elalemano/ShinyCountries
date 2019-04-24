@@ -16,7 +16,7 @@ require(DT)
 
 source("utils/namedListToFrame.R")
 
-res  <- GET("https://restcountries.eu/rest/v2/all")
+res <- GET("https://restcountries.eu/rest/v2/all")
 data <- res %>%
   content() %>%
   lapply(unlist) %>%
@@ -24,8 +24,8 @@ data <- res %>%
   bind_rows() %>%
   dplyr::filter(
     cioc != "" &
-    !is.na(area)
-    ) %>%
+      !is.na(area)
+  ) %>%
   select(
     name, alpha3Code, callingCodes, capital,
     region, subregion, population, latlng1,
@@ -61,7 +61,7 @@ ui <- dashboardPagePlus(
         icon = icon("sliders"),
         badgeStatus = NULL,
         prettyCheckboxGroup("regions", label = NULL, thick = TRUE, animation = "pulse", status = "success", choices = data$region %>% unlist() %>% unique() %>% sort(), selected = data$region %>% unlist() %>% unique() %>% sort())
-        ),
+      ),
       dropdownBlock(
         id = "dd2",
         title = "Country",
@@ -74,14 +74,14 @@ ui <- dashboardPagePlus(
         title = "Population",
         icon = icon("sliders"),
         badgeStatus = NULL,
-        sliderInput('population', label = NULL, min = min(data$population), max = max(data$population), value = c(min(data$population), max(data$population)))
+        sliderInput("population", label = NULL, min = min(data$population), max = max(data$population), value = c(min(data$population), max(data$population)))
       ),
       dropdownBlock(
         id = "dd4",
         title = "Area",
         icon = icon("sliders"),
         badgeStatus = NULL,
-        sliderInput('area', label = NULL, min = min(data$area), max = max(data$area), value = c(min(data$area), max(data$area)))
+        sliderInput("area", label = NULL, min = min(data$area), max = max(data$area), value = c(min(data$area), max(data$area)))
       ),
       dropdownBlock(
         id = "dd5",
@@ -90,14 +90,6 @@ ui <- dashboardPagePlus(
         badgeStatus = NULL,
         selectizeInput("country_code", multiple = T, label = NULL, choices = data$alpha3Code %>% unlist() %>% unique() %>% sort(), selected = NULL)
       )
-    ),
-    dropdownMenu(
-      type = "notifications",
-      badgeStatus = "success",
-      icon = icon('question'),
-      notificationItem('Contact the creator', icon = shiny::icon("envelope"), status = "success", href = 'mailto:l_busswinkel@hotmail.de'),
-      notificationItem('Check me out on Github', icon = shiny::icon("github"), status = "success", href = 'https://github.com/elalemano/ShinyCountries'),
-      notificationItem('Follow me on Twitter', icon = shiny::icon("twitter"), status = "success", href = 'https://twitter.com/LycopersiconLBB')
     )
   ),
   dashboardSidebar(
@@ -140,33 +132,50 @@ ui <- dashboardPagePlus(
       ),
       tabItem(
         tabName = "comparison",
-        box(width = 6, status = 'success', height = '800px',
-            plotlyOutput('bar_area', height = 750)
-            ),
-        box(width = 6, status = 'success', height = '800px',
-            plotlyOutput('scatter_dens', height = 750)
-            )
+        box(
+          width = 6, status = "success", height = "800px",
+          plotlyOutput("bar_area", height = 750)
+        ),
+        box(
+          width = 6, status = "success", height = "800px",
+          plotlyOutput("scatter_dens", height = 750)
+        )
       ), tabItem(
         tabName = "details",
-        box(width = 12, status = 'success',
-            dataTableOutput('detail_table')
-            )
+        box(
+          width = 12, status = "success",
+          dataTableOutput("detail_table")
+        )
       )
     )
   ),
   rightSidebar(
-    background = "light"
-  ),
+    background = "light",
+    rightSidebarTabContent(
+        id = 1,
+        icon = "info",
+        active = TRUE,
+        
+              a(actionButton('mail',"Send feedback", width = '100%', icon = shiny::icon("envelope")), href='mailto:l_busswinkel@hotmail.de'),
+      actionButton('github',"Check the code on Github",width = '100%', icon = shiny::icon("github"), onclick ="window.open('https://github.com/elalemano/ShinyCountries', '_blank')"),
+        actionButton('twitter',"Follow me on Twitter",width = '100%', icon = shiny::icon("twitter"),  onclick ="window.open('https://twitter.com/LycopersiconLBB', '_blank')"), 
+         actionButton('linked_in', 'Get in touch on LinkedIn',width = '100%',icon = shiny::icon("linkedin"), onclick ="window.open('https://linkedin.com/in/lukas-busswinkel', '_blank')")
+        ),
+    rightSidebarTabContent(
+        id = 2,
+        icon = "database",
+        active = F,
+         actionButton('database', 'Data source',width = '100%',icon = shiny::icon("external-link"), onclick ="window.open('https://restcountries.eu/', '_blank')")
+  )),
   dashboardFooter(left_text = "Created 2019", right_text = "by Lukas Busswinkel")
 )
 
 #### ==== SERVER ====####
 
 server <- function(input, output, session) {
-  
-#### ---- Filter Data ----####  
+
+  #### ---- Filter Data ----####
   filterData <- reactive({
-    
     newData <- data
 
     if (!is.null(input$countries)) {
@@ -177,85 +186,90 @@ server <- function(input, output, session) {
     }
 
     newData <- newData %>% dplyr::filter(region %in% input$regions &
-                                           population >= input$population[1] &
-                                           population <= input$population[2] &
-                                           area >= input$area[1] &
-                                           area <= input$area[2] 
-                                           )
+      population >= input$population[1] &
+      population <= input$population[2] &
+      area >= input$area[1] &
+      area <= input$area[2])
     return(newData)
   })
 
 
-    
-  
-#### ---- World Map ----####   
+
+
+  #### ---- World Map ----####
   output$worldMap <- renderLeaflet({
     leaflet(data = filterData()) %>%
       setView(15, 30, 3) %>%
       addProviderTiles(providers$Stamen.TonerLite, providerTileOptions(maxZoom = 6)) %>%
       addMarkers(lng = ~latlng2, lat = ~latlng1, popup = ~pop_ups, popupOptions = popupOptions(maxWidth = 150, minWidth = 150))
   })
-  
-  
-#### ---- Area bar chart ----####   
+
+
+  #### ---- Area bar chart ----####
   output$bar_area <- renderPlotly({
-
     plotData <- filterData() %>% dplyr::filter(!is.na(area))
-    
-    plotData$name <- factor(plotData$name, 
-                            levels = unique(plotData$name[order(plotData$area)]),
-                            ordered = T
-                            )
 
-    plot_ly(data = plotData, y = ~name, x = ~area, type = 'bar',  marker = list(
-      color = 'rgb(5, 104, 4)'
+    plotData$name <- factor(plotData$name,
+      levels = unique(plotData$name[order(plotData$area)]),
+      ordered = T
+    )
+
+    plot_ly(data = plotData, y = ~name, x = ~area, type = "bar", marker = list(
+      color = "rgb(5, 104, 4)"
     )) %>%
-      layout(title = 'Country total area',xaxis = list(title = 'Area in km²'), yaxis = list(title = ''))
+      layout(title = "Country total area", xaxis = list(title = "Area in km²"), yaxis = list(title = ""))
   })
 
-####---- Density scatter chart ----####   
-    output$scatter_dens <- renderPlotly({
-
-    plotData <- filterData() %>% 
+  #### ---- Density scatter chart ----####
+  output$scatter_dens <- renderPlotly({
+    plotData <- filterData() %>%
       dplyr::filter(!is.na(area) & !is.na(population))
 
-    plot_ly(data = plotData, y = ~population, x = ~area, text = ~name,
-            type = 'scatter', mode = 'markers',  
-            marker = list(color=~log(density),colorscale='Viridis', size = 15, opacity = 0.75, colorbar=list(
-      title='log(Density)'
-    ))) %>%
-      layout(title = 'Population vs Area (log scales)',xaxis = list(title = 'Area in km²', type = 'log'), 
-             yaxis = list(title = 'Total population', type = 'log'), showlegend = F)
-  })
-  
-####---- Data table with details ----#### 
-  output$detail_table <- renderDT({
-
-    details <- filterData() %>%
-      select(name, alpha3Code, callingCodes, capital, region, subregion,
-             population, demonym, area, gini,currencies.code,
-             currencies.name, languages.name, regionalBlocs.acronym, 
-              density
-             ) %>%
-      rename(Country = name, Code = alpha3Code, Phone_Code = callingCodes,
-             Capital = capital, Region = region, Subregion = subregion, 
-             Population = population, Demonym = demonym, Area = area, Gini_Coefficient = gini,
-             Currency = currencies.code, Currency_Name = currencies.name,
-             Language = languages.name, Regional_Block = regionalBlocs.acronym,
-              Density = density)
-    
-      datatable(
-        details, filter = 'top', 
-         class = 'row-border stripe hover', rownames = F, style = 'bootstrap',
-        extensions = c('ColReorder','Buttons', 'FixedHeader'),
-        options = list(autoWidth = TRUE, 
-                       scrollX = TRUE,   dom = 'ltirpB', fixedHeader = TRUE,
-    buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-  pageLength = 10,
-  lengthMenu = list(c(5, 10, 15, 20, 50, -1), list('5', '10', '15', '20', '50', 'All')))
+    plot_ly(
+      data = plotData, y = ~population, x = ~area, text = ~name,
+      type = "scatter", mode = "markers",
+      marker = list(color = ~ log(density), colorscale = "Viridis", size = 15, opacity = 0.75, colorbar = list(
+        title = "log(Density)"
+      ))
+    ) %>%
+      layout(
+        title = "Population vs Area (log scales)", xaxis = list(title = "Area in km²", type = "log"),
+        yaxis = list(title = "Total population", type = "log"), showlegend = F
       )
   })
-  
+
+  #### ---- Data table with details ----####
+  output$detail_table <- renderDT({
+    details <- filterData() %>%
+      select(
+        name, alpha3Code, callingCodes, capital, region, subregion,
+        population, demonym, area, gini, currencies.code,
+        currencies.name, languages.name, regionalBlocs.acronym,
+        density
+      ) %>%
+      rename(
+        Country = name, Code = alpha3Code, Phone_Code = callingCodes,
+        Capital = capital, Region = region, Subregion = subregion,
+        Population = population, Demonym = demonym, Area = area, Gini_Coefficient = gini,
+        Currency = currencies.code, Currency_Name = currencies.name,
+        Language = languages.name, Regional_Block = regionalBlocs.acronym,
+        Density = density
+      )
+
+    datatable(
+      details,
+      filter = "top",
+      class = "row-border stripe hover", rownames = F, style = "bootstrap",
+      extensions = c("ColReorder", "Buttons", "FixedHeader"),
+      options = list(
+        autoWidth = TRUE,
+        scrollX = TRUE, dom = "ltirpB", fixedHeader = TRUE,
+        buttons = c("copy", "csv", "excel", "pdf", "print"),
+        pageLength = 10,
+        lengthMenu = list(c(5, 10, 15, 20, 50, -1), list("5", "10", "15", "20", "50", "All"))
+      )
+    )
+  })
 }
 
 #### ==== END ====####
